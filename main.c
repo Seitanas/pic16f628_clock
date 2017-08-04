@@ -122,10 +122,15 @@ void play_setup(void){
         --cycle;
     }
 }
-void display_done(void){
+int display_till(void){
     int end_seconds = seconds + display_for;
     if (end_seconds > 59) // the sum above cant overlap 59 seconds
         end_seconds = end_seconds - 60;
+    return end_seconds;
+}
+
+void display_done(void){
+    int end_seconds = display_till();
     while (end_seconds != seconds){
         // ABCDEFG
         // 3420156
@@ -265,9 +270,7 @@ void main(void) {
     PEIE = 1;// bit6 Peripheral Interrupt Enable bit...1 = Enables all unmasked peripheral interrupts
     while (1){
         if(!button){
-            int end_seconds = seconds + display_for;
-            if (end_seconds > 59) // the sum above cant overlap 59 seconds
-            end_seconds = end_seconds - 60;
+            int end_seconds = display_till();
             while (end_seconds != seconds){
                 display_time(hours, minutes, 0);                
             }
