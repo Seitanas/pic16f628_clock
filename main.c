@@ -65,60 +65,53 @@ void led_wait(void){
 void animation_wait(void){
     __delay_ms(30);
 }
+void led_player(void(*delay_function)(void), int segments, int led_pos){ /* delay_function
+                                                                          * is a pointer to one
+                                                                          * of delay functions above*/
+    PORTB = segments;
+    switch (led_pos){
+        case 1:
+            led1 = 0;
+            break;
+        case 2:
+            led2 = 0;
+            break;
+        case 3:
+            led3 = 0;
+            break;
+        case 4:
+            led4 = 0;
+            break;
+    } 
+    delay_function();
+    reset_mosfets();
+}
+void display_done(void){
+    int end_seconds = display_till();
+    while (end_seconds != seconds){
+        // ABCDEFG
+        // 3420156
+        led_player(led_wait, 0b00101000, 1); // display 'd'
+        led_player(led_wait, 0b00111000, 2); // display 'o'
+        led_player(led_wait, 0b00111001, 3); // display 'n'
+        led_player(led_wait, 0b00010100, 4); // display 'E'
+    }
+}
 void play_setup(void){
     int cycle = 4;
     while (cycle){
-        PORTB = 0b01110111;
-        led1 = 0;
-        animation_wait();
-        reset_mosfets();
-        PORTB = 0b01110111;
-        led2 = 0;
-        animation_wait();
-        reset_mosfets(); 
-        PORTB = 0b01110111;
-        led3 = 0;
-        animation_wait();
-        reset_mosfets(); 
-        PORTB = 0b01110111;
-        led4 = 0;
-        animation_wait();
-        reset_mosfets();
-    
-        PORTB = 0b01101111;
-        led4 = 0;
-        animation_wait();
-        reset_mosfets();
-        PORTB = 0b01111011;
-        led4 = 0;
-        animation_wait();
-        reset_mosfets();
-    
-        PORTB = 0b01111110;
-        led4 = 0;
-        animation_wait();
-        reset_mosfets();
-        PORTB = 0b01111110;
-        led3 = 0;
-        animation_wait();
-        reset_mosfets();
-        PORTB = 0b01111110;
-        led2 = 0;
-        animation_wait();
-        reset_mosfets(); 
-        PORTB = 0b01111110;
-        led1 = 0;
-        animation_wait();
-        reset_mosfets();
-    
-        PORTB = 0b01111101;
-        led1 = 0;
-        animation_wait();
-        reset_mosfets();    
-        PORTB = 0b01011111;
-        led1 = 0;
-        animation_wait();
-        reset_mosfets();
+        led_player(animation_wait, 0b01110111, 1);
+        led_player(animation_wait, 0b01110111, 2);
+        led_player(animation_wait, 0b01110111, 3);
+        led_player(animation_wait, 0b01110111, 4);        
+        led_player(animation_wait, 0b01101111, 4);
+        led_player(animation_wait, 0b01111011, 4);    
+        led_player(animation_wait, 0b01111110, 4);
+        led_player(animation_wait, 0b01111110, 3);
+        led_player(animation_wait, 0b01111110, 2);
+        led_player(animation_wait, 0b01111110, 1);    
+        led_player(animation_wait, 0b01111101, 1);
+        led_player(animation_wait, 0b01011111, 1);
         --cycle;
     }
 }
@@ -128,30 +121,6 @@ int display_till(void){
         end_seconds = end_seconds - 60;
     return end_seconds;
 }
-
-void display_done(void){
-    int end_seconds = display_till();
-    while (end_seconds != seconds){
-        // ABCDEFG
-        // 3420156
-        PORTB = 0b00101000;
-        led1 = 0;
-        led_wait();
-        reset_mosfets();
-        PORTB = 0b00111000;
-        led2 = 0;
-        led_wait();
-        reset_mosfets();
-        PORTB = 0b00111001;
-        led3 = 0;
-        led_wait();
-        reset_mosfets();
-        PORTB = 0b00010100;
-        led4 = 0;
-        led_wait();
-        reset_mosfets();
-    }
-}
 void display_time(int hours, int minutes, int display){ /*
                                                          display = 0 - display hours and minutes
                                                          display = 1 - display hours
@@ -159,27 +128,15 @@ void display_time(int hours, int minutes, int display){ /*
                                                          */
     if (!display || display == 1){
         // display most significant hour digit:
-        PORTB = segment[hours/10];
-        led1 = 0;
-        led_wait();
-        reset_mosfets();
+        led_player(led_wait, segment[hours/10], 1);
         // display least significant hour digit:
-        PORTB = segment[hours%10];
-        led2 = 0;
-        led_wait();
-        reset_mosfets();
+        led_player(led_wait, segment[hours%10], 2);
     }
     if (!display || display == 2){
         // display most significant minute digit:
-        PORTB = segment[minutes/10];
-        led3 = 0;
-        led_wait();
-        reset_mosfets();
+        led_player(led_wait, segment[minutes/10], 3);
         // display least significant minute digit:
-        PORTB = segment[minutes%10];
-        led4 = 0;
-        led_wait();
-        reset_mosfets();    
+        led_player(led_wait, segment[minutes%10], 4);
     }
 }
 void interrupt timer_overflow(){
